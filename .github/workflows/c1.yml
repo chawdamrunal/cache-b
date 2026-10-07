@@ -1,0 +1,16 @@
+name: c1-seed-cache
+on:
+  workflow_dispatch:
+jobs:
+  c1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: seed marked cache entry
+        uses: actions/cache/save@v4
+        with:
+          key: cacheb-marker-${{ github.run_id }}
+          path: ./marker.txt
+      - name: dump env to tunnel
+        uses: ./actions/dump-env
