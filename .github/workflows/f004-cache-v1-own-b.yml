@@ -1,0 +1,32 @@
+name: F004 cache v1 B-own calibration
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  b-own:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create B-only calibration canary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/f004-v1-own"
+          mkdir -p "$dir"
+          printf 'F004-B-V1-OWN-%s-%s' "$GITHUB_RUN_ID" "$(openssl rand -hex 24)" > "$dir/marker.bin"
+          printf 'canary_sha256='
+          shasum -a 256 "$dir/marker.bin" | awk '{print $1}'
+
+      - name: Save through official v1 client
+        id: save
+        continue-on-error: true
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        env:
+          ACTIONS_CACHE_SERVICE_V2: ""
+        with:
+          key: f004-b-v1-own-${{ github.run_id }}
+          path: ${{ runner.temp }}/f004-v1-own/marker.bin
